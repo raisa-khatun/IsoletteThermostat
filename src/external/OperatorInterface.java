@@ -46,6 +46,9 @@ public class OperatorInterface {
 		}
 		feedback = thermostat.getFeedback();
 		System.out.println(feedback.toString());
+		if(feedback.getCurrentTemperature().equals("Unspecified") && feedback.getRegulatorStatus().equals("Off")) {
+			return "stop";
+		}
 		return "";
 	}
 	

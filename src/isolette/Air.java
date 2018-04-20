@@ -16,9 +16,15 @@ public class Air {
 	 * @param heatIncrease Amount to increase or decrease current temperature by
 	 */
 	public static void changeCurrentTemperature(double heatIncrease) {
-		double sum = (currentTemperature + heatIncrease + InfantSensor.sendInfantTemperature());
-		double avg = sum/2.0;
-		currentTemperature = avg;
+		double infantTemp = InfantSensor.sendInfantTemperature();
+		System.out.println(infantTemp);
+		if (infantTemp != 0) {
+			double sum = (currentTemperature + heatIncrease + infantTemp);
+			double avg = sum/2.0;
+			currentTemperature = avg;
+		} else {
+			currentTemperature = 0;
+		}
 	}
 	
 }

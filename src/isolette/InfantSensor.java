@@ -26,7 +26,15 @@ public class InfantSensor {
 		double infantTemp = 0.0;
 		if (bufferedReader != null) {
 			try {
-				infantTemp = Double.parseDouble(bufferedReader.readLine());
+				String line = bufferedReader.readLine();
+				if(line != null) {
+					infantTemp = Double.parseDouble(line);
+				} else 
+				{
+					bufferedReader.close();
+					bufferedReader = null;
+					return 0.0;
+				}
 			} catch (NumberFormatException e) {
 				System.out.println("Incorrect Format");
 			} catch (IOException e) {

@@ -28,21 +28,30 @@ public class Thermostat {
 			double lowerDesiredTemp = currentSetting.getLowerDesiredTemperature();
 			double upperDesiredTemp = currentSetting.getUpperDesiredTemperature();
 			regulatorStatus = "Normal";
-			displayTemperature = String.valueOf(isolette.getTemperatureFromSensor());
-
-			isolette.sendHeatSignal();
-
-			// Reached low temperature: Turn on
-			if (isolette.getTemperatureFromSensor() < lowerDesiredTemp) {
-				if (!isolette.heatSourceStatus()) { // If it is off, turn on
-					isolette.toggleHeatSource();
+			double currentTemp = isolette.getTemperatureFromSensor();
+			if (currentTemp != 0) {
+				displayTemperature = String.valueOf(currentTemp);
+				isolette.sendHeatSignal();
+	
+				// Reached low temperature: Turn on
+				if (isolette.getTemperatureFromSensor() < lowerDesiredTemp) {
+					if (!isolette.heatSourceStatus()) { // If it is off, turn on
+						isolette.toggleHeatSource();
+					}
 				}
-			}
-			// Reached target temperature: Turn off
-			if (isolette.getTemperatureFromSensor() > upperDesiredTemp) {
-				if (isolette.heatSourceStatus()) { // If it is on, turn off
-					isolette.toggleHeatSource();
+				// Reached target temperature: Turn off
+				if (isolette.getTemperatureFromSensor() > upperDesiredTemp) {
+					if (isolette.heatSourceStatus()) { // If it is on, turn off
+						isolette.toggleHeatSource();
+					}
 				}
+			} else {
+				regulatorStatus = "Off";
+				displayTemperature = "Unspecified";
+				monitorStatus = "Off";
+				alarmStatus = "Off";
+				currentSetting = null;
+						
 			}
 		} else {
 			System.out.println("No setting yet");
