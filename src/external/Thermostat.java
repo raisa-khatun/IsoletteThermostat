@@ -1,13 +1,8 @@
 package external;
 
-import isolette.Isolette;
 import util.OperatorFeedback;
-import util.OperatorSetting;
 
-public class Thermostat {
-
-	private Isolette isolette;
-	private OperatorSetting currentSetting;
+public class Thermostat implements Runnable {
 
 	private String regulatorStatus;
 	private String monitorStatus;
@@ -15,80 +10,67 @@ public class Thermostat {
 	private String displayTemperature;
 
 	public Thermostat() {
-		isolette = new Isolette();
 		regulatorStatus = "Init";
 		monitorStatus = "Init";
 		alarmStatus = "Off";
 		displayTemperature = "Unspecified";
-		currentSetting = null;
 	}
 
-	public void regulateTemperature() {
-		if (currentSetting != null) {
-			double lowerDesiredTemp = currentSetting.getLowerDesiredTemperature();
-			double upperDesiredTemp = currentSetting.getUpperDesiredTemperature();
+	public void regulateTemperature(double lowerDesiredTemp,double upperDesiredTemp,double  currentTemp,boolean hStatus) {
+
+		displayTemperature = String.valueOf(currentTemp);
+
+		// Reached low temperature: Turn on
+		if (currentTemp < lowerDesiredTemp) {
+			if (hStatus) { // If it is off, turn on
+				hStatus=!hStatus;
+			}
 			regulatorStatus = "Normal";
-			double currentTemp = isolette.getTemperatureFromSensor();
-			if (currentTemp != 0) {
-				displayTemperature = String.valueOf(currentTemp);
-				isolette.sendHeatSignal();
-	
-				// Reached low temperature: Turn on
-				if (isolette.getTemperatureFromSensor() < lowerDesiredTemp) {
-					if (!isolette.heatSourceStatus()) { // If it is off, turn on
-						isolette.toggleHeatSource();
-					}
-				}
-				// Reached target temperature: Turn off
-				if (isolette.getTemperatureFromSensor() > upperDesiredTemp) {
-					if (isolette.heatSourceStatus()) { // If it is on, turn off
-						isolette.toggleHeatSource();
-					}
-				}
-			} else {
-				regulatorStatus = "Off";
-				displayTemperature = "Unspecified";
-				monitorStatus = "Off";
-				alarmStatus = "Off";
-				currentSetting = null;
-						
-			}
-		} else {
-			System.out.println("No setting yet");
 		}
+		// Reached target temperature: Turn off
+		if (currentTemp > upperDesiredTemp) {
+			if (!hStatus) { // If it is off, turn on
+				hStatus=!hStatus;
+			}
+			regulatorStatus = "Normal";
+		}
+
 	}
 
-	public void monitorTempertature() {
-		if (currentSetting != null) {
+	public void monitorTempertature(double lowerAlarmTemp,double upperAlarmTemp,double currentTemp) {
+		monitorStatus = "Normal";
+		if (currentTemp< lowerAlarmTemp || currentTemp > upperAlarmTemp) {
+			alarmStatus = "On";
 			monitorStatus = "Normal";
-			double lowerAlarmTemp = currentSetting.getLowerAlarmTemperature();
-			double upperAlarmTemp = currentSetting.getUpperAlarmTemperature();
-			if (isolette.getTemperatureFromSensor() < lowerAlarmTemp || isolette.getTemperatureFromSensor() > upperAlarmTemp) {
-				alarmStatus = "On";
-			}
-		} else {
-			System.out.println("No setting yet");
 		}
+
 	}
 
-	/**
-	 * Saves the current setting
-	 * @param setting from the operator interface
-	 */
-	public void setSetting(OperatorSetting setting) {
-		this.currentSetting = setting;
+	public String getRegulatorStatus() {
+		return regulatorStatus;
+	}
+	public String getMonitorStatus() {
+		return monitorStatus;
+	}
+	public String getDisplayTemps() {
+		return displayTemperature;
+	}
+	public String getAlarmStatus() {
+		return alarmStatus;
 	}
 
-	/**
-	 * Sends the feedback to OperatorInterface
-	 * @return OperatorFeedback
-	 */
 	public OperatorFeedback getFeedback() {
 		return new OperatorFeedback(
 				regulatorStatus, 
 				monitorStatus, 
 				displayTemperature, 
 				alarmStatus);
+	}
+
+	@Override
+	public void run() {
+		// TODO Auto-generated method stub
+		//System.out.print("Hi");
 	}
 
 }

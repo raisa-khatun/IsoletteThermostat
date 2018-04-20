@@ -5,53 +5,55 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 
-import util.OperatorFeedback;
-import util.OperatorSetting;
 
-public class OperatorInterface {
-	
+public class OperatorInterface implements Runnable {
+
 	private File inFile;
-	private Thermostat thermostat;
 	private BufferedReader bufferedReader;
-	private OperatorFeedback feedback;
-	
+	private double lowerDesiredTemperature=98;
+	private double upperDesiredTemperature=100;
+	private double lowerAlarmTemperature=97;
+	private double upperAlarmTemperature=103;
+
 	public OperatorInterface() 
 	{
-		thermostat = new Thermostat();
+		//thermostat = new Thermostat();
 		inFile = new File("src/nurse.txt");
 		try {
 			bufferedReader = new BufferedReader(new FileReader(inFile));
-			
+
 		} catch (IOException ioe) {
 			System.out.println("Error reading file");
 		}
-		
+
 	}
-	
-	public String round() {
+
+	public void setSettings() {
 		String command = getCommandFromFile();
 		String[] parsedCommand = command.split("/");
 		switch(parsedCommand[0]) {
-			case "config":
-				OperatorSetting setting = new OperatorSetting(
-						Double.parseDouble(parsedCommand[1]), 
-						Double.parseDouble(parsedCommand[2]), 
-						Double.parseDouble(parsedCommand[3]), 
-						Double.parseDouble(parsedCommand[4]));
-				thermostat.setSetting(setting);
-				break;
-			default:
-				thermostat.regulateTemperature();
-				thermostat.monitorTempertature();
+		case "config":				
+			lowerDesiredTemperature=Double.parseDouble(parsedCommand[1]); 
+			upperDesiredTemperature=Double.parseDouble(parsedCommand[2]);
+			lowerAlarmTemperature=Double.parseDouble(parsedCommand[3]); 
+			upperAlarmTemperature=Double.parseDouble(parsedCommand[4]);
+			break; 
 		}
-		feedback = thermostat.getFeedback();
-		System.out.println(feedback.toString());
-		if(feedback.getCurrentTemperature().equals("Unspecified") && feedback.getRegulatorStatus().equals("Off")) {
-			return "stop";
-		}
-		return "";
 	}
-	
+
+	public double getLD() {
+		return lowerDesiredTemperature;
+	}
+	public double getUD() {
+		return upperDesiredTemperature;
+	}
+	public double getALD() {
+		return lowerAlarmTemperature;
+	}
+	public double getAUD() {
+		return upperAlarmTemperature;
+	}
+
 	public void closeInterface() {
 		if (bufferedReader != null) {
 			try {
@@ -62,7 +64,7 @@ public class OperatorInterface {
 			}
 		}
 	}
-	
+
 	/**
 	 * Sets the current temperature from the isolette by reading from a file 
 	 * Simulates the nurse's operations
@@ -85,5 +87,12 @@ public class OperatorInterface {
 		}
 		return "stop";
 	}
-	
+
+	@Override
+	public void run() {
+		// TODO Auto-generated method stub
+
+
+	}
+
 }
